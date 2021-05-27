@@ -27,8 +27,9 @@ class FoldItModel(BaseModel):
         parser.set_defaults(no_dropout=True) 
 
         if is_train:
-            parser.add_argument('--lambda_A', type=float, default=10.0, help='weight for cycle loss (A -> B -> A)')
-            parser.add_argument('--lambda_B', type=float, default=10.0, help='weight for cycle loss (B -> A -> B)')
+            parser.add_argument('--lambda_adv', type=float, default=10.0, help='weight for adversarial portion')
+            parser.add_argument('--lambda_T', type=float, default=10.0, help='weight for transitve loss')
+            parser.add_argument('--lambda_GT', type = float, default = 10.0, help = 'weight for ground truth loss')
 
             parser.add_argument('--lambda_identity', type=float, default=0.5, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
 
@@ -263,10 +264,10 @@ class FoldItModel(BaseModel):
 
         self.loss_idt_AC = self.criterionIdt(self.idt_AC, self.real_C) * lambda_A * lambda_idt
 
-        syn = torch.cat((self.fake_B,self.fake_AC),1)
-        self.loss_G_big  = self.criterionGAN(self.netD_big(syn),True)
+        # syn = torch.cat((self.fake_B,self.fake_AC),1)
+        # self.loss_G_big  = self.criterionGAN(self.netD_big(syn),True)
 
-        self.loss_G = self.loss_G_B + self.loss_G_BC + self.loss_cycle_BC + self.loss_pix + self.loss_idt_BC + self.loss_G_A + self.loss_G_AC  + self.loss_cycle_AC + self.loss_idt_AC +self.loss_G_big
+        self.loss_G = self.loss_G_B + self.loss_G_BC + self.loss_cycle_BC + self.loss_pix + self.loss_idt_BC + self.loss_G_A + self.loss_G_AC  + self.loss_cycle_AC + self.loss_idt_AC #+self.loss_G_big
         self.loss_G.backward()
 
 

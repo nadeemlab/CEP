@@ -51,12 +51,13 @@ class FoldItModel(BaseModel):
 
         
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
-        visual_names_A = ['real_A', 'fake_B', 'rec_AC','fake_AC','idt_AC']
-        visual_names_B = ['real_B', 'fake_A', 'rec_BC', 'fake_BC', 'real_C','idt_BC']
+        visual_names_A = ['real_A', 'fake_B', 'rec_AC', 'fake_AC']
+        visual_names_B = ['real_B', 'fake_A', 'rec_BC', 'fake_BC']
+        visual_names_C = ['real_C','idt_AC','idt_BC']
 
 
 
-        self.visual_names = visual_names_A + visual_names_B  # combine visualizations for A and B
+        self.visual_names = visual_names_A + visual_names_B +visual_names_C # combine visualizations for A and B and C
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
         if self.isTrain:
@@ -94,8 +95,7 @@ class FoldItModel(BaseModel):
             self.netD_AC = networks.define_D(opt.input_nc, opt.ndf, opt.netD,
                                             opt.n_layers_D, opt.norm, opt.init_type, opt.init_gain, self.gpu_ids)
 
-            # self.netD_big = networks.define_D(opt.input_nc*2, opt.ndf, opt.netD,
-            #                     opt.n_layers_D, opt.norm, opt.init_type, opt.init_gain, self.gpu_ids)
+
 
 
         if self.isTrain:
@@ -180,13 +180,13 @@ class FoldItModel(BaseModel):
         """Calculate GAN loss for discriminator D_A"""
 
         # fake_B = self.fake_B_pool.query(self.fake_B)
-        self.loss_D_A = self.backward_D_basic(self.netD_A, self.real_B, fake_B)
+        self.loss_D_A = self.backward_D_basic(self.netD_A, self.real_B, self.fake_B)
 
     def backward_D_B(self):
         """Calculate GAN loss for discriminator D_A"""
 
         # fake_A = self.fake_A_pool.query(self.fake_A)
-        self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, fake_A)
+        self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, self.fake_A)
 
 
 
@@ -238,6 +238,10 @@ class FoldItModel(BaseModel):
         self.loss_G_BC = self.criterionGAN(self.netD_BC(self.fake_BC),True)* lambda_adv
 
 
+        #sum adversarial losses
+        self.loss_G = self.loss_G_B + self.loss_G_BC + self.loss_G_A + self.loss_G_AC
+
+
         #______________________________________________________
         #Transitive Losses
         #______________________________________________________
@@ -246,6 +250,9 @@ class FoldItModel(BaseModel):
 
         self.loss_T_AC = self.criterionCycle(self.fake_AC, self.rec_AC) * lambda_T
 
+        #add transitive loss
+        self.loss_G += self.loss_T_BC + self.loss_T_AC
+
 
         #______________________________________________________
         #Ground Truth Losses
@@ -253,6 +260,8 @@ class FoldItModel(BaseModel):
 
         self.loss_GT = self.L1Loss(self.fake_BC, self.real_C) * lambda_GT 
 
+        #add ground truth loss
+        self.loss_G += self.loss_GT
 
         #______________________________________________________
         #Identity Losses
@@ -261,9 +270,10 @@ class FoldItModel(BaseModel):
 
         self.loss_idt_AC = self.criterionIdt(self.idt_AC, self.real_C) * lambda_idt
 
+        #add identity loss
+        self.loss_G += self.loss_idt_BC + self.loss_idt_AC
 
-        #sum losses and do backwards operation
-        self.loss_G = self.loss_G_B + self.loss_G_BC + self.loss_cycle_BC + self.loss_pix + self.loss_idt_BC + self.loss_G_A + self.loss_G_AC  + self.loss_cycle_AC + self.loss_idt_AC #+self.loss_G_big
+        #apply backwards operation
         self.loss_G.backward()
 
 
@@ -274,13 +284,13 @@ class FoldItModel(BaseModel):
 
         self.forward()      # compute fake images and reconstruction images.
         # G_A and G_B
-        self.set_requires_grad([self.netD_A, self.netD_B,self.netD_BC, self.netD_AC, self.netD_big], False)  # Ds require no gradients when optimizing Gs
+        self.set_requires_grad([self.netD_A, self.netD_B,self.netD_BC, self.netD_AC], False)  # Ds require no gradients when optimizing Gs
         self.optimizer_G.zero_grad()  # set G_A and G_B's gradients to zero
         self.backward_G()             # calculate gradients for G_A and G_B
         self.optimizer_G.step()       # update G_A and G_B's weights
 
 
-        self.set_requires_grad([self.netD_A, self.netD_B,self.netD_BC, self.netD_AC, self.netD_big], True)
+        self.set_requires_grad([self.netD_A, self.netD_B,self.netD_BC, self.netD_AC], True)
 
         self.optimizer_D.zero_grad()   # set D_A and D_B's gradients to zero
         self.backward_D_BC()

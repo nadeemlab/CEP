@@ -1,13 +1,36 @@
-### CEP: Computational Endoscopy Platform
+# CEP: Computational Endoscopy Platform
 
 Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation, surface coverage visualization, depth estimation and more. As more tools are created they will be added here to create a accessible set of algorithms for endoscopy problems. The current tools are as follows listed below.
 
--FoldIt
+- FoldIt
+
+## Prerequesites
+- Python 3
+- CPU or NVIDIA GPU + CUDA CuDNN
+
+## Installation
+To install the CEP, this repo needs to be cloned
+```
+git clone https://github.com/nadeemlab/CEP.git
+cd CEP
+```
+
+Once the repo is cloned, the python libraries can be installed via ``` pip install -r requirements.txt ```
 
 
-### FoldIt
+
+## FoldIt
 
 The FoldIt model is a method for translating between domains when a shared common domain in available. We use the FoldIt model to learn a translation from optical colonoscopy to haustral fold annotation via a common virtual colonoscopy domain.
+
+To train the FoldIt model the following command can be run
+
+```
+python3 train.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" 
+
+```
+
+If you are using the FoldIt model in your research, please cite our paper.
 
 
 ```
@@ -18,6 +41,7 @@ The FoldIt model is a method for translating between domains when a shared commo
   year={2021}
 }
 ```
+
 
 <!--
 @article{mathew2021visualizing,

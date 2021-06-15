@@ -39,9 +39,16 @@ Once the repo is cloned, the python libraries can be installed via ``` pip insta
 ## FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos (MICCAI'21)
 Haustral folds are colon wall protrusions implicated for high polyp miss rate during optical colonoscopy procedures. If segmented accurately, haustral folds can allow for better estimation of missed surface and can also serve as valuable landmarks for registering pre-treatment virtual (CT) and optical colonoscopies, to guide navigation towards the anomalies found in pre-treatment scans. We present a novel generative adversarial network, FoldIt, for feature-consistent image translation of optical colonoscopy videos to virtual colonoscopy renderings with haustral fold overlays. A new transitive loss is introduced in order to leverage ground truth information between haustral fold annotations and virtual colonoscopy renderings. We demonstrate the effectiveness of our model on real challenging optical colonoscopy videos as well as on textured virtual colonoscopy videos with clinician-verified haustral fold annotations. In essence, the **FoldIt** model is a method for translating between domains when a shared common domain is available. We use the FoldIt model to learn a translation from optical colonoscopy to haustral fold annotation via a common virtual colonoscopy domain.
 
-To train the FoldIt model, run the following command:
-```
+To train the FoldIt model, run the following command. During the training process, results can be viewed via visdom. By default it is on http://localhost:8097.
+``` 
 python3 train.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" 
+
+```
+
+To test your trained model, run the following command.
+
+```
+python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" 
 
 ```
 

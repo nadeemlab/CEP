@@ -36,13 +36,11 @@ class UnalignedDataset(BaseDataset):
         input_nc = self.opt.output_nc if btoA else self.opt.input_nc       # get the number of channels of input image
         output_nc = self.opt.input_nc if btoA else self.opt.output_nc      # get the number of channels of output image
         self.transform_A = get_transform(self.opt, grayscale=(input_nc == 1))
-        # self.transform_B = get_transform(self.opt, grayscale=(output_nc == 1))
 
         #add dataset C
         self.dir_C = os.path.join(opt.dataroot, opt.phase + 'C')  # create a path '/path/to/data/trainB'
         self.C_paths = sorted(make_dataset(self.dir_C, opt.max_dataset_size))    # load images from '/path/to/data/trainB'
         self.C_size = len(self.C_paths)  # get the size of dataset B
-        # self.transform_C = get_transform(self.opt, grayscale=(output_nc == 1))
 
 
 
@@ -84,6 +82,7 @@ class UnalignedDataset(BaseDataset):
         # B = self.transform_B(B_img)
         # C = self.transform_C(C_img)
 
+        #apply the same transforms for img B anc C
         transform_params = get_params(self.opt, B_img.size)
         transform_B = get_transform(self.opt, transform_params, grayscale=False)
         transform_C = get_transform(self.opt, transform_params, grayscale=False)

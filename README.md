@@ -7,19 +7,20 @@ Computational Endoscopy Platform (CEP) provides an exhaustive deep learning tool
 Currently, we are releasing code for our **MICCAI 2021** work, FoldIt, which is a haustral fold detection/segmentation algorithm for colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.
 > FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos.
-> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2021. (* Equal Contribution) (Provisionally Accepted)
+> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2021. (* Equal Contribution) (Provisionally Accepted) 
+> [[Supplementary Video]](https://www.youtube.com/watch?v=_iWBJnDMXjo)
 
 In the coming weeks, we will also release depth estimation code and pretrained models for our **CVPR 2020** paper:
 > Mathew S*, Nadeem S*, Kumari S, Kaufman A. 
 > Augmenting Colonoscopy using Extended and Directional CycleGAN for Lossy Image Translation.
 > *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 4696--4705, 2021. (* Equal Contribution) 
-> [[Paper and Supplementary Video Link]](https://openaccess.thecvf.com/content_CVPR_2020/html/Mathew_Augmenting_Colonoscopy_Using_Extended_and_Directional_CycleGAN_for_Lossy_Image_CVPR_2020_paper.html)
+> [[Paper Link]](https://openaccess.thecvf.com/content_CVPR_2020/html/Mathew_Augmenting_Colonoscopy_Using_Extended_and_Directional_CycleGAN_for_Lossy_Image_CVPR_2020_paper.html) [[Supplementary]](https://youtu.be/9JZdnwtsE6I)
 
 For surface coverage visualization, we will release our **ISBI 2021** and upcoming **TMI** code as well:
 > Mathew S*, Nadeem S*, Kaufman A.
 > Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations.
 > *IEEE 18th International Symposium on Biomedical Imaging (ISBI)*, 329--333, 2021. (* Equal Contribution) 
-> [[Paper Link]](https://arxiv.org/pdf/2101.07280.pdf) [[Supplementary Video]](https://tinyurl.com/y2dfwlc9)
+> [[Paper Link]](https://arxiv.org/pdf/2101.07280.pdf) [[Supplementary Video]](https://youtu.be/x1-wwCiYeC0)
 
 
 ## Prerequesites
@@ -33,7 +34,14 @@ git clone https://github.com/nadeemlab/CEP.git
 cd CEP
 ```
 
-Once the repo is cloned, the python libraries can be installed via ``` pip install -r requirements.txt ```
+Once the repo is cloned, the python libraries can be installed 
+  - via pip ``` pip install -r requirements.txt ```
+  - via conda ``` conda env create -f environment.yml ```
+
+### Docker
+A dockerfile is provided as an additional way to install.
+  - First, [Docker](https://docs.docker.com/engine/install/ubuntu/) needs to be installed along with [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) for GPU support
+
 
 
 ## FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos (MICCAI'21)
@@ -48,15 +56,16 @@ Haustral folds are colon wall protrusions implicated for high polyp miss rate du
 To train the FoldIt model, run the following command. During the training process, results can be viewed via visdom. By default it is on http://localhost:8097.
 ``` 
 python3 train.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" 
-
 ```
 
 To test your trained model, run the following command.
 
 ```
-python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" 
-
+python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_name"
 ```
+
+### Dataset Format
+When training, the network will look for 'trainA', 'trainB', and 'trainC' folders each contain images from domains A, B and C in the dataroot folder. During testing time, 'testA', 'testB', and 'testC' subfolders should contain images for testing.
 
 ## Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations (ISBI'21) [CODE COMING SOON]
 Optical colonoscopy (OC), the most prevalent colon cancer screening tool, has a high miss rate due to a number of factors, including the geometry of the colon (haustral fold and sharp bends occlusions), endoscopist inexperience or fatigue, endoscope field of view, etc. We present a framework to visualize the missed regions per-frame during the colonoscopy, and provides a workable clinical solution. Specifically, we make use of 3D reconstructed virtual colonoscopy (VC) data and the insight that VC and OC share the same underlying geometry but differ in color, texture and specular reflections, embedded in the OC domain. A lossy unpaired image-to-image translation model is introduced with enforced shared latent space for OC and VC. This shared latent space captures the geometric information while deferring the color, texture, and specular information creation to additional Gaussian noise input. This additional noise input can be utilized to generate one-to-many mappings from VC to OC and OC to OC. 

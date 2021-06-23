@@ -1,0 +1,6 @@
+checkpoints/
+results/
+datasets/*
+*.png
+*/*.pyc
+*/**/__pycache__

@@ -67,11 +67,7 @@ To test your trained model, run the following command.
 python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_name"
 ```
 
-Our model weights and OC testing data is provided [here](https://zenodo.org/record/4993651). We trained our model with 80 generator filters so, when testing our model use the following command
-
-```
-python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_name" --ngf 80
-```
+Our model weights and OC testing data is provided [here](https://zenodo.org/record/4993651). 
 
 ### Dataset Format
 When training, the network will look for 'trainA', 'trainB', and 'trainC' folders each contain images from domains A, B and C in the dataroot folder. During testing time, 'testA', 'testB', and 'testC' subfolders should contain images for testing.

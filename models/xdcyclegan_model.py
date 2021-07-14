@@ -50,17 +50,18 @@ class XDCycleGANModel(BaseModel):
         """
         BaseModel.__init__(self, opt)
         # specify the training losses you want to print out. The training/test scripts will call <BaseModel.get_current_losses>
-        #self.loss_names = ['D_A', 'G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B',"D",'extend_A']
-        self.loss_names = ['G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B',"D","extend_A"]
+        self.loss_names = ['G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B', "D", "extend_A"]
         
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         visual_names_A = ['real_A', 'fake_B', 'rec_A','ex_fake_B']
         visual_names_B = ['real_B', 'fake_A', 'rec_B']
+
         if self.isTrain and self.opt.lambda_identity > 0.0:  # if identity loss is used, we also visualize idt_B=G_A(B) ad idt_A=G_A(B)
             visual_names_A.append('idt_B')
             visual_names_B.append('idt_A')
-
         self.visual_names = visual_names_A + visual_names_B  # combine visualizations for A and B
+
+
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
         if self.isTrain:
             self.model_names = ['G_A', 'G_B', 'D', 'D_B']
@@ -85,11 +86,11 @@ class XDCycleGANModel(BaseModel):
         if self.isTrain:
             if opt.lambda_identity > 0.0:  # only works when input and output images have the same number of channels
                 assert(opt.input_nc == opt.output_nc)
-            self.fake_A_pool = ImagePool(opt.pool_size)  # create image buffer to store previously generated images
-            self.fake_B_pool = ImagePool(opt.pool_size)  # create image buffer to store previously generated images
-            self.rec_A_pool = ImagePool(opt.pool_size)
 
-
+            # create image buffer to store previously generated images
+            self.fake_A_pool = ImagePool(opt.pool_size)  
+            self.fake_B_pool = ImagePool(opt.pool_size)  
+            self.rec_A_pool  = ImagePool(opt.pool_size)
             self.AtoB_pool = ImagePool(opt.pool_size)
             self.BtoA_pool = ImagePool(opt.pool_size)
             self.real_pool = ImagePool(opt.pool_size)
@@ -103,7 +104,7 @@ class XDCycleGANModel(BaseModel):
             # initialize optimizers; schedulers will be automatically created by function <BaseModel.setup>.
             self.optimizer_G = torch.optim.Adam(itertools.chain(self.netG_A.parameters(), self.netG_B.parameters()), lr=opt.lr, betas=(opt.beta1, 0.999))
             self.optimizer_D = torch.optim.Adam(itertools.chain(self.netD_B.parameters(),self.netD.parameters()), lr=opt.lr, betas=(opt.beta1, 0.999))
-            
+
             self.optimizers.append(self.optimizer_G)
             self.optimizers.append(self.optimizer_D)
 
@@ -153,12 +154,6 @@ class XDCycleGANModel(BaseModel):
         loss_D.backward()
         return loss_D
 
-    def backward_D_A(self):
-        """Calculate GAN loss for discriminator D_A"""
-
-        fake_B = self.fake_B_pool.query(self.fake_B.detach())
-        self.loss_D_A = self.backward_D_basic(self.netD_A, self.real_B, fake_B)
-
     def backward_D_B(self):
         """Calculate GAN loss for discriminator D_B"""
         rec_A = self.rec_A_pool.query(self.rec_A.detach())
@@ -167,12 +162,9 @@ class XDCycleGANModel(BaseModel):
         fake_A = self.fake_A_pool.query(self.fake_A.detach())
         real_A = self.real_pool.query(self.real_A.detach())
         self.loss_D_B += self.backward_D_basic(self.netD_B, real_A, fake_A)
-        #self.loss_D_B = self.loss_D_B
 
     def backward_D(self):
         """Calculate GAN loss for discriminator D_A"""
-        #AtoB_p = self.AtoB_pool.query(self.AtoB)
-        #BtoA_p = self.BtoA_pool.query(self.BtoA)
 
         AB = torch.cat((self.real_A,self.fake_B),1)
         BA = torch.cat((self.fake_A,self.real_B),1)
@@ -188,18 +180,13 @@ class XDCycleGANModel(BaseModel):
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
 
-        #Set the loss of DA and DB to 0
-        #self.loss_D_A = 0
-        #self.loss_D_B = 0
 
         # Identity loss
         if lambda_idt > 0:
             # G_A should be identity if real_B is fed: ||G_A(B) - B||
             self.idt_A = self.netG_A(self.real_B)
             self.loss_idt_A = self.criterionIdt(self.idt_A, self.real_B) * lambda_B * lambda_idt
-            # G_B should be identity if real_A is fed: ||G_B(A) - A||
             self.idt_B = self.netG_B(self.real_A)
-            #self.loss_idt_B = self.criterionIdt(self.idt_B, self.real_A) * lambda_A * lambda_idt
             self.loss_idt_B = 0
         else:
             self.loss_idt_A = 0
@@ -209,8 +196,7 @@ class XDCycleGANModel(BaseModel):
         self.loss_G_A = self.criterionGAN(self.netD(self.AtoB), False)
         # GAN loss D_B(G_B(B))
         self.loss_G_B = self.criterionGAN(self.netD(self.BtoA), True)
-        # Forward cycle loss || G_B(G_A(A)) - A||
-        #self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
+
         #Extended Cycle loss
         self.ex_fake_B = self.netG_A(self.rec_A)
         self.loss_cycle_A = self.criterionCycle(self.ex_fake_B, self.fake_B.detach()) * lambda_A
@@ -221,7 +207,6 @@ class XDCycleGANModel(BaseModel):
         self.loss_extend_A = self.criterionGAN(self.netD_B(self.rec_A), True)# + self.criterionGAN(self.netD_B(self.fake_A), True)
 
         # combined loss and calculate gradients
-        #self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_extend_A
         self.loss_G = 2*(self.loss_G_A + self.loss_G_B) + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_extend_A
         self.loss_G.backward()
 
@@ -235,16 +220,13 @@ class XDCycleGANModel(BaseModel):
         # forward
         self.forward()      # compute fake images and reconstruction images.
         # G_A and G_B
-        #self.set_requires_grad([self.netD_A, self.netD_B,self.netD], False)  # Ds require no gradients when optimizing Gs
         self.set_requires_grad([self.netD_B,self.netD], False)  # Ds require no gradients when optimizing Gs
         self.optimizer_G.zero_grad()  # set G_A and G_B's gradients to zero
         self.backward_G()             # calculate gradients for G_A and G_B
         self.optimizer_G.step()       # update G_A and G_B's weights
-        # D_A and D_B
-        #self.set_requires_grad([self.netD_A, self.netD_B,self.netD], True)
+        # D and D_B
         self.set_requires_grad([self.netD_B,self.netD], True)
         self.optimizer_D.zero_grad()   # set D_A and D_B's gradients to zero
         self.backward_D()      # calculate gradients for D_A
-        #self.backward_D_A()      # calculate gradients for D_A
         self.backward_D_B()      # calculate graidents for D_B
         self.optimizer_D.step()  # update D_A and D_B's weights

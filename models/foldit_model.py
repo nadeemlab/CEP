@@ -101,14 +101,6 @@ class FoldItModel(BaseModel):
         if self.isTrain:
             if opt.lambda_identity > 0.0:  # only works when input and output images have the same number of channels
                 assert(opt.input_nc == opt.output_nc)
-            # self.fake_A_pool = ImagePool(opt.pool_size)  # create image buffer to store previously generated images
-            # self.fake_B_pool = ImagePool(opt.pool_size)  # create image buffer to store previously generated images
-            # self.rec_A_pool = ImagePool(opt.pool_size)        #extended change HERE <-------------------------
-
-
-            # self.AtoB_pool = ImagePool(opt.pool_size)        #extended change HERE <-------------------------
-            # self.BtoA_pool = ImagePool(opt.pool_size)        #extended change HERE <-------------------------
-            # self.real_pool = ImagePool(opt.pool_size)        #extended change HERE <-------------------------
 
 
             # define loss functions

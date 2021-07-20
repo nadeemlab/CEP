@@ -68,13 +68,6 @@ class UnalignedDataset(BaseDataset):
         A_img = Image.open(A_path).convert('RGB')
         B_img = Image.open(B_path).convert('RGB')
 
-
-        #B = torch.zeros(20,256,256)
-        #for i in range(19):
-        #    B[i] = torch.from_numpy(np.where(B_mid == i,1,0))
-
-        #B[19] = torch.from_numpy(np.where(B_mid == 255,1,0))
-
         transform_params = get_params(self.opt, A_img.size)
         # apply image transformation
         A = self.transform_A(A_img)

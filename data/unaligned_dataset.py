@@ -67,9 +67,6 @@ class UnalignedDataset(BaseDataset):
         B_path = self.B_paths[index_B]
         A_img = Image.open(A_path).convert('RGB')
         B_img = Image.open(B_path).convert('RGB')
-        if self.opt.model == 'foldit':
-            C_img = Image.open(C_path).convert('RGB')
-        #B_mid = np.array(B_img)
 
 
         #B = torch.zeros(20,256,256)
@@ -88,6 +85,7 @@ class UnalignedDataset(BaseDataset):
 
         if self.opt.model == 'foldit':
             C_path = self.C_paths[index_B]
+            C_img = Image.open(C_path).convert('RGB')
 
             #apply the same transforms for img B anc C
             transform_C = get_transform(self.opt, transform_params, grayscale=False)

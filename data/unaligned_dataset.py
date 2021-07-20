@@ -37,10 +37,12 @@ class UnalignedDataset(BaseDataset):
         output_nc = self.opt.input_nc if btoA else self.opt.output_nc      # get the number of channels of output image
         self.transform_A = get_transform(self.opt, grayscale=(input_nc == 1))
 
-        #add dataset C
-        self.dir_C = os.path.join(opt.dataroot, opt.phase + 'C')  # create a path '/path/to/data/trainB'
-        self.C_paths = sorted(make_dataset(self.dir_C, opt.max_dataset_size))    # load images from '/path/to/data/trainB'
-        self.C_size = len(self.C_paths)  # get the size of dataset B
+        self.C_size = 0
+        if self.opt.model == 'foldit':
+            #add dataset C
+            self.dir_C = os.path.join(opt.dataroot, opt.phase + 'C')  # create a path '/path/to/data/trainC'
+            self.C_paths = sorted(make_dataset(self.dir_C, opt.max_dataset_size))    # load images from '/path/to/data/trainC'
+            self.C_size = len(self.C_paths)  # get the size of dataset C
 
 
 
@@ -61,12 +63,12 @@ class UnalignedDataset(BaseDataset):
             index_B = index % self.B_size
         else:   # randomize the index for domain B to avoid fixed pairs.
             index_B = random.randint(0, self.B_size - 1)
+
         B_path = self.B_paths[index_B]
-        C_path = self.C_paths[index_B]
         A_img = Image.open(A_path).convert('RGB')
         B_img = Image.open(B_path).convert('RGB')
-        C_img = Image.open(C_path).convert('RGB')
-        #B_img = Image.open(B_path)#.convert('RGB')
+        if self.opt.model == 'foldit':
+            C_img = Image.open(C_path).convert('RGB')
         #B_mid = np.array(B_img)
 
 
@@ -79,18 +81,28 @@ class UnalignedDataset(BaseDataset):
         transform_params = get_params(self.opt, A_img.size)
         # apply image transformation
         A = self.transform_A(A_img)
-        # B = self.transform_B(B_img)
-        # C = self.transform_C(C_img)
 
-        #apply the same transforms for img B anc C
         transform_params = get_params(self.opt, B_img.size)
         transform_B = get_transform(self.opt, transform_params, grayscale=False)
-        transform_C = get_transform(self.opt, transform_params, grayscale=False)
-
         B = transform_B(B_img)
-        C = transform_C(C_img)
 
-        return {'A': A, 'B': B, 'C': C, 'A_paths': A_path, 'B_paths': B_path, 'C_paths': C_path}
+        if self.opt.model == 'foldit':
+            C_path = self.C_paths[index_B]
+
+            #apply the same transforms for img B anc C
+            transform_C = get_transform(self.opt, transform_params, grayscale=False)
+
+            B = transform_B(B_img)
+            C = transform_C(C_img)
+
+
+            return {'A': A, 'B': B, 'C': C, 'A_paths': A_path, 'B_paths': B_path, 'C_paths': C_path}
+        else:
+            # B = self.transform_B(B_img)
+            return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+
+
+
 
     def __len__(self):
         """Return the total number of images in the dataset.

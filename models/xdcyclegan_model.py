@@ -50,7 +50,7 @@ class XDCycleGANModel(BaseModel):
         """
         BaseModel.__init__(self, opt)
         # specify the training losses you want to print out. The training/test scripts will call <BaseModel.get_current_losses>
-        self.loss_names = ['G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', 'idt_B', "D", "extend_A"]
+        self.loss_names = ['G_A', 'cycle_A', 'idt_A', 'D_B', 'G_B', 'cycle_B', "D", "extend_A"]
         
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         visual_names_A = ['real_A', 'fake_B', 'rec_A','ex_fake_B']
@@ -156,6 +156,11 @@ class XDCycleGANModel(BaseModel):
 
     def backward_D_B(self):
         """Calculate GAN loss for discriminator D_B"""
+        # rec_A = self.rec_A_pool.query(self.rec_A.detach())
+        # fake_A = self.fake_A_pool.query(self.fake_A.detach())
+        # # real_A = self.real_pool.query(self.real_A.detach())
+        # self.loss_D_B  = self.backward_D_basic(self.netD_B, fake_A, rec_A)
+
         rec_A = self.rec_A_pool.query(self.rec_A.detach())
         self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, rec_A)
 
@@ -198,16 +203,16 @@ class XDCycleGANModel(BaseModel):
         self.loss_G_B = self.criterionGAN(self.netD(self.BtoA), True)
 
         #Extended Cycle loss
-        self.ex_fake_B = self.netG_A(self.rec_A)
+        # self.ex_fake_B = self.netG_A(self.rec_A)
         self.loss_cycle_A = self.criterionCycle(self.ex_fake_B, self.fake_B.detach()) * lambda_A
         # Backward cycle loss || G_A(G_B(B)) - B||
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
 
         #Extended cycle discrmininator
-        self.loss_extend_A = self.criterionGAN(self.netD_B(self.rec_A), True)# + self.criterionGAN(self.netD_B(self.fake_A), True)
+        self.loss_extend_A = self.criterionGAN(self.netD_B(self.rec_A), True) * .5
 
         # combined loss and calculate gradients
-        self.loss_G = 2*(self.loss_G_A + self.loss_G_B) + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_extend_A
+        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_extend_A
         self.loss_G.backward()
 
 

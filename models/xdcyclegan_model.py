@@ -1,8 +1,4 @@
 #THIS IS THE ONE WITH THE SINGLE CYCLE DISCRIMINATOR!!!
-#We are going to have 1 discrminator for cycles and one for recreated OC image.
-
-#THIS IS THE CVPR MODEL
-
 import torch
 import itertools
 from util.image_pool import ImagePool
@@ -12,7 +8,7 @@ from . import networks
 
 class XDCycleGANModel(BaseModel):
     """
-    This class implements the CycleGAN model, for learning image-to-image translation without paired data.
+    This class implements the XDCycleGAN model, for learning a one-to-many image-to-image translation without paired data.
 
     """
     @staticmethod
@@ -26,24 +22,18 @@ class XDCycleGANModel(BaseModel):
         Returns:
             the modified parser.
 
-
-        Generators: G_A: A -> B; G_B: B -> A.
-        Discriminators: D_A: G_A(A) vs. B; D_B: G_B(B) vs. A.
-        Forward cycle loss:  lambda_A * ||G_B(G_A(A)) - A|| (Eqn. (2) in the paper)
-        Backward cycle loss: lambda_B * ||G_A(G_B(B)) - B|| (Eqn. (2) in the paper)
-        Identity loss (optional): lambda_identity * (||G_A(B) - B|| * lambda_B + ||G_B(A) - A|| * lambda_A) (Sec 5.2 "Photo generation from paintings" in the paper)
-
         """
         parser.set_defaults(no_dropout=True)  # default CycleGAN did not use dropout
         if is_train:
             parser.add_argument('--lambda_A', type=float, default=10.0, help='weight for cycle loss (A -> B -> A)')
             parser.add_argument('--lambda_B', type=float, default=10.0, help='weight for cycle loss (B -> A -> B)')
+            parser.add_argument('--lambda_extend', type=float, default = 10.0, help='weight for adversarial loss on reconstructed image G_A(G_B(B))')
             parser.add_argument('--lambda_identity', type=float, default=0.5, help='use identity mapping. Setting lambda_identity other than 0 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set lambda_identity = 0.1')
 
         return parser
 
     def __init__(self, opt):
-        """Initialize the CycleGAN class.
+        """Initialize the XDCycleGAN class.
 
         Parameters:
             opt (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions
@@ -61,7 +51,6 @@ class XDCycleGANModel(BaseModel):
             visual_names_B.append('idt_A')
         self.visual_names = visual_names_A + visual_names_B  # combine visualizations for A and B
 
-
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>.
         if self.isTrain:
             self.model_names = ['G_A', 'G_B', 'D', 'D_B']
@@ -69,7 +58,6 @@ class XDCycleGANModel(BaseModel):
             self.model_names = ['G_A', 'G_B']
 
         # define networks (both Generators and discriminators)
-
         self.netG_A = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.norm,
                                         not opt.no_dropout, opt.init_type, opt.init_gain, self.gpu_ids)
         self.netG_B = networks.define_G(opt.output_nc, opt.input_nc, opt.ngf, opt.netG, opt.norm,
@@ -81,7 +69,6 @@ class XDCycleGANModel(BaseModel):
 
             self.netD_B = networks.define_D(opt.input_nc, opt.ndf, opt.netD,
                                             opt.n_layers_D, opt.norm, opt.init_type, opt.init_gain, self.gpu_ids)
-
 
         if self.isTrain:
             if opt.lambda_identity > 0.0:  # only works when input and output images have the same number of channels
@@ -156,10 +143,6 @@ class XDCycleGANModel(BaseModel):
 
     def backward_D_B(self):
         """Calculate GAN loss for discriminator D_B"""
-        # rec_A = self.rec_A_pool.query(self.rec_A.detach())
-        # fake_A = self.fake_A_pool.query(self.fake_A.detach())
-        # # real_A = self.real_pool.query(self.real_A.detach())
-        # self.loss_D_B  = self.backward_D_basic(self.netD_B, fake_A, rec_A)
 
         rec_A = self.rec_A_pool.query(self.rec_A.detach())
         self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, rec_A)
@@ -169,7 +152,7 @@ class XDCycleGANModel(BaseModel):
         self.loss_D_B += self.backward_D_basic(self.netD_B, real_A, fake_A)
 
     def backward_D(self):
-        """Calculate GAN loss for discriminator D_A"""
+        """Calculate GAN loss for discriminator D"""
 
         AB = torch.cat((self.real_A,self.fake_B),1)
         BA = torch.cat((self.fake_A,self.real_B),1)
@@ -179,12 +162,11 @@ class XDCycleGANModel(BaseModel):
 
     def backward_G(self):
 
-
         """Calculate the loss for generators G_A and G_B"""
         lambda_idt = self.opt.lambda_identity
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
-
+        lambda_E = self.opt.lambda_extend
 
         # Identity loss
         if lambda_idt > 0:
@@ -203,20 +185,16 @@ class XDCycleGANModel(BaseModel):
         self.loss_G_B = self.criterionGAN(self.netD(self.BtoA), True)
 
         #Extended Cycle loss
-        # self.ex_fake_B = self.netG_A(self.rec_A)
         self.loss_cycle_A = self.criterionCycle(self.ex_fake_B, self.fake_B.detach()) * lambda_A
-        # Backward cycle loss || G_A(G_B(B)) - B||
+        # Backward cycle loss 
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
 
         #Extended cycle discrmininator
-        self.loss_extend_A = self.criterionGAN(self.netD_B(self.rec_A), True) * .5
+        self.loss_extend_A = self.criterionGAN(self.netD_B(self.rec_A), True) * lambda_E
 
         # combined loss and calculate gradients
         self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_extend_A
         self.loss_G.backward()
-
-
-
 
 
 

@@ -11,7 +11,7 @@ Currently, we are releasing code for our **MICCAI 2021** work, FoldIt, which is 
 > *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2021. (* Equal Contribution) (Provisionally Accepted) 
 > [[Supplementary Video]](https://www.youtube.com/watch?v=_iWBJnDMXjo)
 
-In the coming weeks, we will also release depth estimation code and pretrained models for our **CVPR 2020** paper:
+We also release have depth estimation code and pretrained models for our **CVPR 2020** paper released:
 > Mathew S*, Nadeem S*, Kumari S, Kaufman A. 
 > Augmenting Colonoscopy using Extended and Directional CycleGAN for Lossy Image Translation.
 > *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 4696--4705, 2021. (* Equal Contribution) 

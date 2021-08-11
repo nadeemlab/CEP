@@ -1,23 +1,24 @@
-# CEP: Computational Endoscopy Platform
+### CEP: Computational Endoscopy Platform
 
 Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, training data, and pretrained models will be released here with detailed instruction along with easy-to-run docker containers and Google CoLab projects.
 
 
 © This code is made available for non-commercial academic purposes.
 
-Currently, we are releasing code for our **MICCAI 2021** work, FoldIt, which is a haustral fold detection/segmentation algorithm for colonoscopy videos. Please cite the following paper:
+## Updates:
+- [x] FoldIt **MICCAI'21** code released for haustral fold detection/segmentation in colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.
 > FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos.
 > *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2021. (* Equal Contribution) (Provisionally Accepted) 
 > [[Paper Link]](https://arxiv.org/abs/2106.12522) [[Supplementary Video]](https://www.youtube.com/watch?v=_iWBJnDMXjo)
 
-We also release have depth estimation code and pretrained models for our **CVPR 2020** paper released:
+- [x] XDCycleGAN **CVPR'20** code released for scale-consistent depth estimation for colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kumari S, Kaufman A. 
 > Augmenting Colonoscopy using Extended and Directional CycleGAN for Lossy Image Translation.
 > *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 4696--4705, 2021. (* Equal Contribution) 
 > [[Paper Link]](https://openaccess.thecvf.com/content_CVPR_2020/html/Mathew_Augmenting_Colonoscopy_Using_Extended_and_Directional_CycleGAN_for_Lossy_Image_CVPR_2020_paper.html) [[Supplementary Video]](https://youtu.be/9JZdnwtsE6I)
 
-For surface coverage visualization, we will release our **ISBI 2021** and upcoming **TMI** code as well:
+- [ ] For surface coverage visualization, we will release our **ISBI 2021** and upcoming **TMI** code:
 > Mathew S*, Nadeem S*, Kaufman A.
 > Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations.
 > *IEEE 18th International Symposium on Biomedical Imaging (ISBI)*, 329--333, 2021. (* Equal Contribution) 

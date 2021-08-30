@@ -96,6 +96,11 @@ To test your trained model, run the following command.
 ```
 python3 test.py --dataroot path_to_dataset -model xdcyclegan -name "xdcyclegan_model_name"
 ```
+The XDCycleGAN models trained on OC and depth/VC is provided [here](https://zenodo.org/record/5335909). We trained our model with 80 generator filters so, when testing our model use the following command
+
+```
+python3 test.py --dataroot path_to_dataset -model xdcyclegan -name "xdcyclegan_model_name" --ngf 80
+```
 
 <!--
 Our model weights and OC testing data is provided [here](https://zenodo.org/record/4993651). We trained our model with 80 generator filters so, when testing our model use the following command

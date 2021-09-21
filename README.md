@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="imgs/CEP_logo_hires.png" alt="CEP Logo" width="200"/>
+</p>
+<!-- ![FoldIt_Preview](imgs/FoldIt_preview.PNG =200x) -->
+
 ### CEP: Computational Endoscopy Platform
 
 Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, training data, and pretrained models will be released here with detailed instruction along with easy-to-run docker containers and Google CoLab projects.

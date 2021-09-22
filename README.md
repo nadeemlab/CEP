@@ -2,7 +2,7 @@
 
 *Exhaustive deep learning toolset for analyzing endoscopy videos*
 
-Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, AI-ready training/testing data, and pretrained models will be released here with detailed instruction along with easy-to-run docker containers and Google CoLab projects.
+Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, AI-ready training/testing data, and pretrained models will be released here with detailed instructions along with easy-to-run docker containers and Google CoLab projects.
 
 
 © This code is made available for non-commercial academic purposes.

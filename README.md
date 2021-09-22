@@ -1,16 +1,15 @@
-<p align="center">
-  <img src="imgs/CEP_logo_hires.png" alt="CEP Logo" width="200"/>
-</p>
-<!-- ![FoldIt_Preview](imgs/FoldIt_preview.PNG =200x) -->
+### CEP: Computational Endoscopy Platform <img src="imgs/CEP_logo_hires.png" width="200px" align="right" />
 
-### CEP: Computational Endoscopy Platform
+*Exhaustive deep learning toolset for analyzing endoscopy videos*
 
-Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, training data, and pretrained models will be released here with detailed instruction along with easy-to-run docker containers and Google CoLab projects.
+Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, AI-ready training/testing data, and pretrained models will be released here with detailed instruction along with easy-to-run docker containers and Google CoLab projects.
 
 
 © This code is made available for non-commercial academic purposes.
 
 ## Updates:
+- [x] AI-ready training and testing data released. This dataset is created from public HyperKvasir OC videos and TCIA virtual colonoscopy repositories. Easy-to-run Docker containers and Google CoLab projects are also released. 
+
 - [x] FoldIt **MICCAI'21** code released for haustral fold detection/segmentation in colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.
 > FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos.

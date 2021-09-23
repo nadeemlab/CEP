@@ -81,6 +81,12 @@ python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_nam
 ### Dataset Format
 When training, the network will look for 'trainA', 'trainB', and 'trainC' folders each containing images from domains A, B and C in the dataroot folder. During testing time, 'testA', 'testB', and 'testC' subfolders should contain images for testing.
 
+### Public Dataset
+We trained our model on public data and found the results do not differ significantly. Both the model and data can be found [here](https://zenodo.org/record/5519974).
+
+### Google Colab
+A Google Colab notebook is provided [here](https://colab.research.google.com/drive/1uvooVxTxvAC8YvvgHaV2NYtJVWIHXCLY?usp=sharing).
+
 
 ## [CVPR'20] Augmenting Colonoscopy Using Extended and Directional CycleGAN for Lossy Image Translation
 Colorectal cancer screening modalities, such as optical colonoscopy (OC) and virtual colonoscopy (VC), are critical for diagnosing and ultimately removing polyps (precursors for colon cancer). The non-invasive VC is normally used to inspect a 3D reconstructed colon (from computed tomography scans) for polyps and if found, the OC procedure is performed to physically traverse the colon via endoscope and remove these polyps. In this paper, we present a deep learning framework, Extended and Directional CycleGAN, for lossy unpaired image-to-image translation between OC and VC to augment OC video sequences with scale-consistent depth information from VC and VC with patient-specific textures, color and specular highlights from OC (e.g. for realistic polyp synthesis). Both OC and VC contain structural information, but it is obscured in OC by additional patient-specific texture and specular highlights, hence making the translation from OC to VC lossy. The existing CycleGAN approaches do not handle lossy transformations. To address this shortcoming, we introduce an extended cycle consistency loss, which compares the geometric structures from OC in the VC domain. This loss removes the need for the CycleGAN to embed OC information in the VC domain. To handle a stronger removal of the textures and lighting, a Directional Discriminator is introduced to differentiate the direction of translation (by creating paired information for the discriminator), as opposed to the standard CycleGAN which is direction-agnostic. Combining the extended cycle consistency loss and the Directional Discriminator, we show state-of-the-art results on scale-consistent depth inference for phantom, textured VC and for real polyp and normal colon video sequences. We also present results for realistic pendunculated and flat polyp synthesis from bumps introduced in 3D VC models.
@@ -116,6 +122,12 @@ python3 test.py --dataroot path_to_dataset -model foldit -name "foldit_model_nam
 
 ### Dataset Format
 When training, the network will look for 'trainA' and 'trainB' folders each containing images from domains A and B in the dataroot folder. During testing time, 'testA' and 'testB' subfolders should contain images for testing.
+
+### Public Dataset
+We trained our model on public data and found the results do not differ significantly. The model and data for depth esimation can be found [here](https://zenodo.org/record/5520029). The model and data for VC can be found [here](https://zenodo.org/record/5520019).
+
+### Google Colab
+A Google Colab notebook is provided for both depth and VC training [here](https://colab.research.google.com/drive/1KKAfsXoBZpix524l4PaGfHe4QDdwboTc?usp=sharing).
 
 
 ## [ISBI'21] Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations [CODE COMING SOON!!!]

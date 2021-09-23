@@ -1,6 +1,14 @@
-### CEP: Computational Endoscopy Platform <img src="imgs/CEP_logo_hires.png" width="200px" align="right" />
-
-*Exhaustive deep learning toolset for analyzing endoscopy videos*
+<!-- PROJECT LOGO -->
+<br />
+<p align="center">
+    <img src="./imgs/CEP_logo_hires.png" width="50%">
+    <h3 align="center"><strong>CEP: Computational Endoscopy Platform (advanced deep learning toolset for analyzing endoscopy videos)</strong></h3>
+    <p align="center">
+    <a href="https://github.com/nadeemlab/CEP/issues">Report Bug</a>
+    |
+    <a href="https://github.com/nadeemlab/CEP/issues">Request Feature</a>
+  </p>
+</p>
 
 Computational Endoscopy Platform (CEP) provides an exhaustive deep learning toolset to handle tasks such as haustral fold annotation (in colonoscopy videos), surface coverage visualization, depth estimation and more. All our code, AI-ready training/testing data, and pretrained models will be released here with detailed instructions along with easy-to-run docker containers and Google CoLab projects.
 
@@ -8,7 +16,7 @@ Computational Endoscopy Platform (CEP) provides an exhaustive deep learning tool
 © This code is made available for non-commercial academic purposes.
 
 ## Updates:
-- [x] AI-ready training and testing data released. This dataset is created from public HyperKvasir OC videos and TCIA virtual colonoscopy repositories. Easy-to-run Docker containers and Google CoLab projects are also released. 
+- [x] AI-ready training and testing data released. This dataset is created from public [HyperKvasir](https://osf.io/mh9sj/) optical colonoscopy videos and [TCIA CT colonography](https://wiki.cancerimagingarchive.net/display/Public/CT+Colonography) repositories. Easy-to-run Docker containers and Google CoLab projects are also released. 
 
 - [x] FoldIt **MICCAI'21** code released for haustral fold detection/segmentation in colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.

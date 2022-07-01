@@ -46,19 +46,19 @@ Internal Dataset            |  Public Dataset
 - [x] FoldIt **MICCAI'21** code released for haustral fold detection/segmentation in colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.
 > FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos.
-> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2021. (* Equal Contribution) 
-> [[Paper Link]](https://arxiv.org/abs/2106.12522) [[Supplementary Video]](https://www.youtube.com/watch?v=_iWBJnDMXjo)
+> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 12903, 221-230, 2021. (* Equal Contribution) 
+> [[Paper Link]](https://arxiv.org/abs/2106.12522) [[Supplementary Video]](https://www.youtube.com/watch?v=_iWBJnDMXjo) [[Reviews]](https://miccai2021.org/openaccess/paperlinks/2021/09/01/201-Paper1000.html)
 
 - [x] XDCycleGAN **CVPR'20** code released for scale-consistent depth estimation for colonoscopy videos. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kumari S, Kaufman A. 
 > Augmenting Colonoscopy using Extended and Directional CycleGAN for Lossy Image Translation.
-> *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 4696--4705, 2021. (* Equal Contribution) 
+> *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)*, 4696-4705, 2021. (* Equal Contribution) 
 > [[Paper Link]](https://openaccess.thecvf.com/content_CVPR_2020/html/Mathew_Augmenting_Colonoscopy_Using_Extended_and_Directional_CycleGAN_for_Lossy_Image_CVPR_2020_paper.html) [[Supplementary Video]](https://youtu.be/9JZdnwtsE6I)
 
 - [ ] For surface coverage visualization, we will release our **ISBI 2021**:
 > Mathew S*, Nadeem S*, Kaufman A.
 > Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations.
-> *IEEE 18th International Symposium on Biomedical Imaging (ISBI)*, 329--333, 2021. (* Equal Contribution) 
+> *IEEE 18th International Symposium on Biomedical Imaging (ISBI)*, 329-333, 2021. (* Equal Contribution) 
 > [[Paper Link]](https://arxiv.org/abs/2101.07280) [[Supplementary Video]](https://youtu.be/x1-wwCiYeC0)
 
 

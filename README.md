@@ -6,13 +6,13 @@
     <p align="center">
     <a href="#miccai22-clts-gan-color-lighting-texture-specular-reflection-augmentation-for-colonoscopy">CLTS-GAN MICCAI'22</a>
     |
-    <a href="miccai21-foldit-haustral-folds-detection-and-segmentation-in-colonoscopy-videos">FoldIt MICCAI'21</a>
+    <a href="#miccai21-foldit-haustral-folds-detection-and-segmentation-in-colonoscopy-videos">FoldIt MICCAI'21</a>
     |
     <a href="#cvpr20-augmenting-colonoscopy-using-extended-and-directional-cyclegan-for-lossy-image-translation">XDCycleGAN CVPR'20</a>
     |
-    <a href="https://github.com/nadeemlab/CEP/issues">Report Bug</a>
+    <a href="#isbi21-visualizing-missing-surfaces-in-colonoscopy-videos-using-shared-latent-space-representations">MissedSurface ISBI'21</a>
     |
-    <a href="https://github.com/nadeemlab/CEP/issues">Request Feature</a>
+    <a href="https://github.com/nadeemlab/CEP/issues">Issues</a>
   </p>
 </p>
 
@@ -38,7 +38,8 @@ Internal Dataset            |  Public Dataset
 - [x] CLTS-GAN **MICCAI'22** code released for color-lighting-texture-specular reflection augmentation in colonoscopy video frames. Please cite the following paper:
 > Mathew S*, Nadeem S*, Kaufman A.
 > CLTS-GAN: Color-Lighting-Texture-Specular Reflection Augmentation for Colonoscopy.
-> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2022. (* Equal Contribution) (Provisionally Accepted) 
+> *International Conference on Medical Imaging Computing and Computer Assisted Intervention (MICCAI)*, 2022. (* Equal Contribution)
+> [[Paper Link]](https://arxiv.org/pdf/2206.14951.pdf)
 
 - [x] AI-ready training and testing data released. This dataset is created from public [HyperKvasir](https://osf.io/mh9sj/) optical colonoscopy videos and [TCIA CT colonography](https://wiki.cancerimagingarchive.net/display/Public/CT+Colonography) repositories. Easy-to-run Docker containers and Google CoLab projects are also released. 
 
@@ -82,7 +83,7 @@ A dockerfile is provided as an additional way to install.
   - Build Docker Image ```docker build -t cep .```
   - Create and Run Docker Container ```docker run --gpus all --name CEP -it cep```
 
-## [MICCAI'22] CLTS-GAN: Color-Lighting-Texture-Specular Reflection Augmentation for Colonoscopy
+## [[MICCAI'22]](https://arxiv.org/abs/2206.14951) CLTS-GAN: Color-Lighting-Texture-Specular Reflection Augmentation for Colonoscopy
 Automated analysis of optical colonoscopy (OC) video frames (to assist endoscopists during OC) is challenging due to variations in color, lighting, texture, and specular reflections. Previous methods either remove some of these variations via preprocessing (making pipelines cumbersome) or add diverse training data with annotations (but expensive and time-consuming). We present CLTS-GAN, a new deep learning model that gives fine control over color, lighting, texture, and specular reflection synthesis for OC video frames. We show that adding these colonoscopy-specific augmentations to the training data can improve state-of-the-art polyp detection/segmentation methods as well as drive next generation of OC simulators for training medical students.
 
 <p align="center">
@@ -90,7 +91,7 @@ Automated analysis of optical colonoscopy (OC) video frames (to assist endoscopi
 </p>
 <!-- ![Color_Lighting_Preview](imgs/color_lighting_preview.png =200x) -->
 
-## [MICCAI'21] FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos
+## [[MICCAI'21]](https://arxiv.org/abs/2106.12522) FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos
 Haustral folds are colon wall protrusions implicated for high polyp miss rate during optical colonoscopy procedures. If segmented accurately, haustral folds can allow for better estimation of missed surface and can also serve as valuable landmarks for registering pre-treatment virtual (CT) and optical colonoscopies, to guide navigation towards the anomalies found in pre-treatment scans. We present a novel generative adversarial network, FoldIt, for feature-consistent image translation of optical colonoscopy videos to virtual colonoscopy renderings with haustral fold overlays. A new transitive loss is introduced in order to leverage ground truth information between haustral fold annotations and virtual colonoscopy renderings. We demonstrate the effectiveness of our model on real challenging optical colonoscopy videos as well as on textured virtual colonoscopy videos with clinician-verified haustral fold annotations. In essence, the **FoldIt** model is a method for translating between domains when a shared common domain is available. We use the FoldIt model to learn a translation from optical colonoscopy to haustral fold annotation via a common virtual colonoscopy domain.
 
 <p align="center">
@@ -126,7 +127,7 @@ We trained our model on public data and found the results do not differ signific
 A Google Colab notebook is provided [here](https://colab.research.google.com/drive/1uvooVxTxvAC8YvvgHaV2NYtJVWIHXCLY?usp=sharing).
 
 
-## [CVPR'20] Augmenting Colonoscopy Using Extended and Directional CycleGAN for Lossy Image Translation
+## [[CVPR'20]](https://openaccess.thecvf.com/content_CVPR_2020/html/Mathew_Augmenting_Colonoscopy_Using_Extended_and_Directional_CycleGAN_for_Lossy_Image_CVPR_2020_paper.html) Augmenting Colonoscopy Using Extended and Directional CycleGAN for Lossy Image Translation
 Colorectal cancer screening modalities, such as optical colonoscopy (OC) and virtual colonoscopy (VC), are critical for diagnosing and ultimately removing polyps (precursors for colon cancer). The non-invasive VC is normally used to inspect a 3D reconstructed colon (from computed tomography scans) for polyps and if found, the OC procedure is performed to physically traverse the colon via endoscope and remove these polyps. In this paper, we present a deep learning framework, Extended and Directional CycleGAN, for lossy unpaired image-to-image translation between OC and VC to augment OC video sequences with scale-consistent depth information from VC and VC with patient-specific textures, color and specular highlights from OC (e.g. for realistic polyp synthesis). Both OC and VC contain structural information, but it is obscured in OC by additional patient-specific texture and specular highlights, hence making the translation from OC to VC lossy. The existing CycleGAN approaches do not handle lossy transformations. To address this shortcoming, we introduce an extended cycle consistency loss, which compares the geometric structures from OC in the VC domain. This loss removes the need for the CycleGAN to embed OC information in the VC domain. To handle a stronger removal of the textures and lighting, a Directional Discriminator is introduced to differentiate the direction of translation (by creating paired information for the discriminator), as opposed to the standard CycleGAN which is direction-agnostic. Combining the extended cycle consistency loss and the Directional Discriminator, we show state-of-the-art results on scale-consistent depth inference for phantom, textured VC and for real polyp and normal colon video sequences. We also present results for realistic pendunculated and flat polyp synthesis from bumps introduced in 3D VC models.
 
 
@@ -168,7 +169,7 @@ We trained our model on public data and found the results do not differ signific
 A Google Colab notebook is provided for both depth and VC training [here](https://colab.research.google.com/drive/1KKAfsXoBZpix524l4PaGfHe4QDdwboTc?usp=sharing).
 
 
-## [ISBI'21] Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations
+## [[ISBI'21]](https://arxiv.org/abs/2101.07280) Visualizing Missing Surfaces In Colonoscopy Videos using Shared Latent Space Representations
 Optical colonoscopy (OC), the most prevalent colon cancer screening tool, has a high miss rate due to a number of factors, including the geometry of the colon (haustral fold and sharp bends occlusions), endoscopist inexperience or fatigue, endoscope field of view, etc. We present a framework to visualize the missed regions per-frame during the colonoscopy, and provides a workable clinical solution. Specifically, we make use of 3D reconstructed virtual colonoscopy (VC) data and the insight that VC and OC share the same underlying geometry but differ in color, texture and specular reflections, embedded in the OC domain. A lossy unpaired image-to-image translation model is introduced with enforced shared latent space for OC and VC. This shared latent space captures the geometric information while deferring the color, texture, and specular information creation to additional Gaussian noise input. This additional noise input can be utilized to generate one-to-many mappings from VC to OC and OC to OC. 
 
 

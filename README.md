@@ -91,6 +91,22 @@ Automated analysis of optical colonoscopy (OC) video frames (to assist endoscopi
 </p>
 <!-- ![Color_Lighting_Preview](imgs/color_lighting_preview.png =200x) -->
 
+To train the CLTS model, run the following command. During the training process, results can be viewed via visdom. By default it is on http://localhost:8097.
+``` 
+python3 train.py --dataroot path_to_dataset -model cltsgan -name "cltsgan_model_name" 
+```
+
+To run your trained model to generate texture and colors, run the following command.
+
+```
+python3 test.py --dataroot path_to_dataset -model cltsTest -name "clts_model_name"
+```
+ The command above will create 5 images with different texture and color added to VC images. Here are some useful arugments:
+- ```--freeze_color``` will fix the color information for each iteration of the images
+- ```--freeze_texture``` will fix the texture information for each iteration of the images
+- ```--augment``` will allow for augmentation of OC image input (image will passthrough both generator to allow which also works with the two argumnents above)
+
+
 ## [[MICCAI'21]](https://arxiv.org/abs/2106.12522) FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos
 Haustral folds are colon wall protrusions implicated for high polyp miss rate during optical colonoscopy procedures. If segmented accurately, haustral folds can allow for better estimation of missed surface and can also serve as valuable landmarks for registering pre-treatment virtual (CT) and optical colonoscopies, to guide navigation towards the anomalies found in pre-treatment scans. We present a novel generative adversarial network, FoldIt, for feature-consistent image translation of optical colonoscopy videos to virtual colonoscopy renderings with haustral fold overlays. A new transitive loss is introduced in order to leverage ground truth information between haustral fold annotations and virtual colonoscopy renderings. We demonstrate the effectiveness of our model on real challenging optical colonoscopy videos as well as on textured virtual colonoscopy videos with clinician-verified haustral fold annotations. In essence, the **FoldIt** model is a method for translating between domains when a shared common domain is available. We use the FoldIt model to learn a translation from optical colonoscopy to haustral fold annotation via a common virtual colonoscopy domain.
 

@@ -110,7 +110,7 @@ def init_net(net, init_type='normal', init_gain=0.02, gpu_ids=[]):
     return net
 
 
-def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, init_type='normal', init_gain=0.02, gpu_ids=[], addNoise = False, rev = False):
     """Create a generator
 
     Parameters:
@@ -140,7 +140,11 @@ def define_G(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, in
     net = None
     norm_layer = get_norm_layer(norm_type=norm)
 
-    if netG == 'resnet_9blocks':
+    if rev:
+        net = invResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9)
+    elif addNoise:
+        net = ResnetGeneratorNoise(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9, addNoise=addNoise)
+    elif netG == 'resnet_9blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=9)
     elif netG == 'resnet_6blocks':
         net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6)
@@ -192,6 +196,8 @@ def define_D(input_nc, ndf, netD, n_layers_D=3, norm='batch', init_type='normal'
         net = NLayerDiscriminator(input_nc, ndf, n_layers_D, norm_layer=norm_layer)
     elif netD == 'pixel':     # classify if each pixel is real or fake
         net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer)
+    elif netD == 'spec':
+        net = NLayerSpecDiscriminator(input_nc, ndf, n_layers=3, norm_layer=norm_layer)
     else:
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % net)
     return init_net(net, init_type, init_gain, gpu_ids)
@@ -306,16 +312,36 @@ def cal_gradient_penalty(netD, real_data, fake_data, device, type='mixed', const
     else:
         return 0.0, None
 
+class AdaInLayer(nn.Module):
+    """Defines the Adaptive Instance Normalization Layer
+    """
+    def __init__(self,channels):
+        super(AdaInLayer, self).__init__()
+
+        self.norm = nn.InstanceNorm2d(channels)
+        self.style = nn.Linear(128, channels*2)
+
+        self.style.bias.data[:channels] = 1
+        self.style.bias.data[channels:] = 0
+
+    def forward(self, input, style):
+        style = self.style(style.squeeze())
+        gamma, beta = style.chunk(2, -1)
+        out = self.norm(input)
+        gamma = gamma.unsqueeze(1).unsqueeze(2)
+        beta = beta.unsqueeze(1).unsqueeze(2)
+
+        out = gamma * out + beta
+
+        return out
 
 class ResnetGenerator(nn.Module):
     """Resnet-based generator that consists of Resnet blocks between a few downsampling/upsampling operations.
-
     We adapt Torch code and idea from Justin Johnson's neural style transfer project(https://github.com/jcjohnson/fast-neural-style)
     """
 
     def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
         """Construct a Resnet-based generator
-
         Parameters:
             input_nc (int)      -- the number of channels in input images
             output_nc (int)     -- the number of channels in output images
@@ -366,6 +392,246 @@ class ResnetGenerator(nn.Module):
     def forward(self, input):
         """Standard forward"""
         return self.model(input)
+
+
+class ResnetGeneratorNoise(nn.Module):
+    """Resnet-based generator that consists of Resnet blocks between a few downsampling/upsampling operations.
+
+    We adapt Torch code and idea from Justin Johnson's neural style transfer project(https://github.com/jcjohnson/fast-neural-style)
+    """
+
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect', addNoise = False):
+        """Construct a Resnet-based generator
+
+        Parameters:
+            input_nc (int)      -- the number of channels in input images
+            output_nc (int)     -- the number of channels in output images
+            ngf (int)           -- the number of filters in the last conv layer
+            norm_layer          -- normalization layer
+            use_dropout (bool)  -- if use dropout layers
+            n_blocks (int)      -- the number of ResNet blocks
+            padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
+        """
+
+        assert(n_blocks >= 0)
+        super(ResnetGeneratorNoise, self).__init__()
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+
+        #add noise module here
+        self.addNoise = addNoise
+        if addNoise:
+
+            #_________________________________________________________________________________
+            #NOISE 2D NOISE HERE
+            #_________________________________________________________________________________
+
+            noiseTModel1 = []
+            noiseTModel1 += [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.Upsample(scale_factor = 2),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True)   ]
+            noiseTModel1 += [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.InstanceNorm2d(1),   
+                            nn.LeakyReLU(True),
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True),
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),   ]
+
+            noiseTModel2 = [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.Upsample(scale_factor = 2),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True)   ]
+            noiseTModel2 += [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.Upsample(scale_factor = 2),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True),
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True),
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),   ]
+
+            noiseTModel3 = [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.Upsample(scale_factor = 2),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True)   ]
+            noiseTModel3 += [ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.Upsample(scale_factor = 2),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True),
+
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                            nn.InstanceNorm2d(1),
+                            nn.LeakyReLU(True),
+                            nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),]
+
+            self.noiseTModel1 = nn.Sequential(*noiseTModel1)
+            self.noiseTModel2 = nn.Sequential(*noiseTModel2)
+            self.noiseTModel3 = nn.Sequential(*noiseTModel3)
+
+            noiseModel = []
+            noiseModel += [nn.Linear(128, 128), nn.LeakyReLU(True)]
+            noiseModel += [nn.Linear(128, 128), nn.LeakyReLU(True)]
+            noiseModel += [nn.Linear(128, 128), nn.LeakyReLU(True)]
+            self.noiseModel = nn.Sequential(*noiseModel)
+
+
+
+
+        model = [nn.ReflectionPad2d(3),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 norm_layer(ngf),
+                 nn.ReLU(True)]
+
+        n_downsampling = 2
+        for i in range(n_downsampling):  # add downsampling layers
+            mult = 2 ** i
+            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
+                      norm_layer(ngf * mult * 2),
+                      nn.ReLU(True)]
+
+
+        #RESNET BLOCK STUFF!!!
+        self.res_block = nn.ModuleList([])
+        self.res_ada = nn.ModuleList([])
+        self.res_param = nn.ParameterList([])
+        self.res_text = nn.ModuleList()
+        mult = 2 ** n_downsampling
+        for i in range(n_blocks):       # add ResNet blocks
+
+            self.res_block += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+            self.res_ada   += [AdaInLayer(ngf * mult)]
+            self.res_param += [nn.Parameter(torch.zeros(1,ngf * mult,1,1))]
+
+            self.res_text += nn.ModuleList([ nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),
+                nn.InstanceNorm2d(1),
+                nn.LeakyReLU(True),
+                nn.Conv2d(1,1, kernel_size=3, stride=1, padding=1, bias=use_bias),])
+
+
+        if not addNoise:
+            mult = 2 ** n_downsampling
+            for i in range(n_blocks):       # add ResNet blocks
+
+                model += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+
+            for i in range(n_downsampling):  # add upsampling layers
+                mult = 2 ** (n_downsampling - i)
+                model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                             kernel_size=3, stride=2,
+                                             padding=1, output_padding=1,
+                                             bias=use_bias),
+                          norm_layer(int(ngf * mult / 2)),
+                          nn.ReLU(True)]
+            model += [nn.ReflectionPad2d(3)]
+            model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
+            model += [nn.Tanh()]
+            self.model = nn.Sequential(*model)
+
+
+        #_________________________________________________________________________________
+        #ADAIN UPSAMPLING
+        #_________________________________________________________________________________
+        else:
+
+            self.upsampleM =  nn.ModuleList([])
+            self.AdaInN =  nn.ModuleList([])
+            self.upSizes = [0]
+            curr = 0
+            for i in range(n_downsampling):  # add upsampling layers
+                mult = 2 ** (n_downsampling - i)
+                self.upsampleM += nn.ModuleList(nn.Sequential(*[nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                             kernel_size=3, stride=2,
+                                             padding=1, output_padding=1,
+                                             bias=use_bias),
+                          nn.ReLU(True)]))
+
+                self.AdaInN += nn.ModuleList([AdaInLayer(int(ngf * mult / 2))])
+
+                self.upSizes += [curr + 2]
+                curr += 2
+                print(ngf*mult,int(ngf * mult / 2))
+
+            self.upsampleM += nn.ModuleList(nn.Sequential(*[nn.ReflectionPad2d(3),
+                                nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0),
+                                nn.Tanh()]))
+            self.upSizes += [2 + curr]
+
+            self.AdaInN += nn.ModuleList([AdaInLayer(3)])          
+
+            self.model = nn.Sequential(*model)
+
+
+
+
+            tex_model = []
+            tex_model2 = []
+            #predict AdaIN noise
+            mult = mult = 2 ** n_downsampling
+
+            tex_model += [ nn.Conv2d(ngf * mult, ngf * mult//4, kernel_size=3, stride=2, padding=1, bias=use_bias)]
+            tex_model += [ nn.LeakyReLU(True)]
+            tex_model += [ nn.Conv2d(ngf * mult//4, 16, kernel_size=3, stride=2, padding=1, bias=use_bias)]
+            tex_model += [ nn.LeakyReLU(True)]
+
+            tex_model2 += [ nn.Linear(4096,1024)]
+            tex_model2 += [ nn.Linear(1024,128)]
+
+            self.tex_model = nn.Sequential(*tex_model)
+            self.tex_model2 = nn.Sequential(*tex_model2)
+
+
+
+            extra_l = [nn.Conv2d(3,3, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+            self.extra_l = nn.Sequential(*extra_l)
+
+            self.n_parm = nn.ParameterList([nn.Parameter(torch.zeros(1,160,1,1))])
+            self.n_parm += [nn.Parameter(torch.zeros(1,80,1,1))]
+            self.n_parm += [nn.Parameter(torch.zeros(1,3,1,1))]
+
+
+
+    def forward(self, inp, noise =None, n_t = None):
+        """Standard forward"""
+        if self.addNoise:
+
+
+            tlayers = [self.noiseTModel1, self.noiseTModel2, self.noiseTModel3]
+            style = self.noiseModel(noise)
+            out = self.model(inp)
+
+            #RESNET TEXTIRE INPUT
+            for i in range(len(self.res_block)):
+                n = self.res_text[i](n_t[:,i:i+1,:,:])
+                out = self.res_block[i](out)
+                out = out + self.res_param[i] * n
+                out = self.res_ada[i](out,style)
+
+
+            for i in range(len(self.AdaInN)):
+                n = tlayers[i](n_t[:,9+i:9+i+1,:,:])
+
+                for j in range(self.upSizes[i],self.upSizes[i+1]):
+                    out = self.upsampleM[j](out)
+                out = out + self.n_parm[i] * n
+                out = self.AdaInN[i](out,style)
+
+
+            out = self.upsampleM[-1](self.extra_l(out))
+
+
+            return out
+
+        else:
+            return self.model(inp)
+
+
+
+
+
 
 
 class ResnetBlock(nn.Module):
@@ -608,3 +874,206 @@ class PixelDiscriminator(nn.Module):
     def forward(self, input):
         """Standard forward."""
         return self.net(input)
+
+
+
+
+
+
+class NLayerSpecDiscriminator(nn.Module):
+    """Defines a PatchGAN discriminator"""
+
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d):
+        """Construct a PatchGAN discriminator
+
+        Parameters:
+            input_nc (int)  -- the number of channels in input images
+            ndf (int)       -- the number of filters in the last conv layer
+            n_layers (int)  -- the number of conv layers in the discriminator
+            norm_layer      -- normalization layer
+        """
+        super(NLayerSpecDiscriminator, self).__init__()
+        if type(norm_layer) == functools.partial:  # no need to use bias as BatchNorm2d has affine parameters
+            use_bias = norm_layer.func != nn.BatchNorm2d
+        else:
+            use_bias = norm_layer != nn.BatchNorm2d
+
+        kw = 4
+        padw = 1
+        sequence = [spectral_norm(nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw)), nn.LeakyReLU(0.2, True)]
+        nf_mult = 1
+        nf_mult_prev = 1
+        for n in range(1, n_layers):  # gradually increase the number of filters
+            nf_mult_prev = nf_mult
+            nf_mult = min(2 ** n, 8)
+            sequence += [
+                spectral_norm(nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=2, padding=padw, bias=use_bias)),
+                norm_layer(ndf * nf_mult),
+                nn.LeakyReLU(0.2, True),
+                nn.Dropout(0.5)
+            ]
+
+        nf_mult_prev = nf_mult
+        nf_mult = min(2 ** n_layers, 8)
+        sequence += [
+            spectral_norm(nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=kw, stride=1, padding=padw, bias=use_bias)),
+            norm_layer(ndf * nf_mult),
+            nn.LeakyReLU(0.2, True),
+            nn.Dropout(0.5)
+        ]
+
+        sequence += [spectral_norm(nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw))]  # output 1 channel prediction map
+        self.model = nn.Sequential(*sequence)
+
+    def forward(self, input):
+        """Standard forward."""
+        return self.model(input)
+
+
+
+
+
+
+
+
+class invResnetGenerator(nn.Module):
+    """Resnet-based generator that consists of Resnet blocks between a few downsampling/upsampling operations.
+    This Resnet takes produces an image and predicts Style and Texture Vectors
+
+    We adapt Torch code and idea from Justin Johnson's neural style transfer project(https://github.com/jcjohnson/fast-neural-style)
+    """
+
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
+        """Construct a Resnet-based generator
+
+        Parameters:
+            input_nc (int)      -- the number of channels in input images
+            output_nc (int)     -- the number of channels in output images
+            ngf (int)           -- the number of filters in the last conv layer
+            norm_layer          -- normalization layer
+            use_dropout (bool)  -- if use dropout layers
+            n_blocks (int)      -- the number of ResNet blocks
+            padding_type (str)  -- the name of padding layer in conv layers: reflect | replicate | zero
+        """
+
+        assert(n_blocks >= 0)
+        super(invResnetGenerator, self).__init__()
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+
+        model = [nn.ReflectionPad2d(3),
+                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
+                 norm_layer(ngf),
+                 nn.ReLU(True)]
+
+        n_downsampling = 2
+        for i in range(n_downsampling):  # add downsampling layers
+            mult = 2 ** i
+            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3, stride=2, padding=1, bias=use_bias),
+                      norm_layer(ngf * mult * 2),
+                      nn.ReLU(True)]
+
+        mult = 2 ** n_downsampling
+        for i in range(n_blocks):       # add ResNet blocks
+
+            model += [ResnetBlock(ngf * mult, padding_type=padding_type, norm_layer=norm_layer, use_dropout=use_dropout, use_bias=use_bias)]
+
+
+        img_model = []
+        tex_model = []
+        tex_model2 = []
+        n_model = []
+
+
+        # #image model portion
+        for i in range(n_downsampling):  # add upsampling layers
+            mult = 2 ** (n_downsampling - i)
+            img_model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+                                         kernel_size=3, stride=2,
+                                         padding=1, output_padding=1,
+                                         bias=use_bias),
+                      norm_layer(int(ngf * mult / 2)),
+                      nn.ReLU(True)]
+        img_model += [nn.ReflectionPad2d(3)]
+        img_model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
+        img_model += [nn.Tanh()]
+
+
+        noiseModel = []
+        noiseModel += [nn.Linear(128, 128), nn.InstanceNorm1d(128), nn.LeakyReLU(True)]
+        noiseModel += [nn.Linear(128, 128), nn.InstanceNorm1d(128), nn.LeakyReLU(True)]
+        noiseModel += [nn.Linear(128, 128), nn.InstanceNorm1d(128), nn.LeakyReLU(True)]
+        self.noiseModel = nn.Sequential(*noiseModel)
+
+
+
+
+
+        #predict AdaIN noise
+        mult = mult = 2 ** n_downsampling
+
+        tex_model += [ nn.Conv2d(ngf * mult, ngf * mult//4, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        tex_model += [nn.MaxPool2d(2)]
+        tex_model += [nn.InstanceNorm2d(ngf * mult//4)]
+        tex_model += [ nn.LeakyReLU(True)]
+
+        tex_model += [ nn.Conv2d(ngf * mult//4, 16, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        tex_model += [nn.MaxPool2d(2)]
+        tex_model += [nn.InstanceNorm2d(16)]
+        tex_model += [ nn.LeakyReLU(True)]
+
+        tex_model += [ nn.Conv2d(16,16, kernel_size=3, stride=1, padding=1, bias=use_bias),   ]
+        tex_model += [nn.InstanceNorm2d(16)]
+        tex_model += [ nn.LeakyReLU(True)]
+        
+        tex_model += [ nn.Conv2d(16,16, kernel_size=3, stride=1, padding=1, bias=use_bias),   ]
+        tex_model += [ nn.LeakyReLU(True)]
+
+        tex_model2 += [ nn.Linear(4096,1024), nn.LeakyReLU()]
+        tex_model2 += [ nn.Linear(1024,128), nn.LeakyReLU()]
+        tex_model2 += [ nn.Linear(128,128), nn.Sigmoid()]
+
+
+        #predict specular nosie
+        n_model += [nn.Conv2d(ngf * mult, ngf * mult//4, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        n_model += [nn.InstanceNorm2d( ngf * mult//4)]
+        n_model += [ nn.LeakyReLU(True)]
+
+        n_model += [nn.Conv2d(ngf * mult//4, 16, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        n_model += [nn.InstanceNorm2d(16)]
+        n_model += [ nn.LeakyReLU(True)]
+
+        n_model += [nn.Conv2d(16, 12, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        n_model += [nn.InstanceNorm2d(12)]
+        n_model += [ nn.LeakyReLU(True)]
+
+        n_model += [nn.Conv2d(12, 12, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        n_model += [nn.InstanceNorm2d(12)]
+        n_model += [ nn.LeakyReLU(True)]
+
+        n_model += [nn.Conv2d(12, 12, kernel_size=3, stride=1, padding=1, bias=use_bias)]
+        n_model += [nn.InstanceNorm2d(12)]
+        n_model += [ nn.Sigmoid()]
+
+
+
+        self.model = nn.Sequential(*model)
+        self.img_model = nn.Sequential(*img_model)
+        self.tex_model = nn.Sequential(*tex_model)
+        self.tex_model2 = nn.Sequential(*tex_model2)
+        self.n_model = nn.Sequential(*n_model)
+
+
+
+
+
+
+    def forward(self, input):
+        """Standard forward"""
+        inp = self.model(input)
+        t = torch.flatten(self.tex_model(inp),start_dim = 1)
+        out = self.img_model(inp)
+
+        return out, self.tex_model2(t).unsqueeze(0), self.n_model(inp)

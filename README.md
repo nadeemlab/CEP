@@ -109,6 +109,9 @@ python3 test.py --dataroot path_to_dataset -model cltsTest -name "clts_model_nam
 ### Public Dataset
 We augmented a portion of the polyp detection dataset from [PraNet](https://github.com/DengPingFan/PraNet). Both the model and augmented data can be found [here](https://zenodo.org/record/7036198).
 
+### Google Colab
+A Google Colab notebook is provided [here](https://colab.research.google.com/drive/1IGKrqIoGtUGriiP1zYkmSRlzU3d8veoD?usp=sharing).
+
 ## [[MICCAI'21]](https://arxiv.org/abs/2106.12522) FoldIt: Haustral Folds Detection and Segmentation in Colonoscopy Videos
 Haustral folds are colon wall protrusions implicated for high polyp miss rate during optical colonoscopy procedures. If segmented accurately, haustral folds can allow for better estimation of missed surface and can also serve as valuable landmarks for registering pre-treatment virtual (CT) and optical colonoscopies, to guide navigation towards the anomalies found in pre-treatment scans. We present a novel generative adversarial network, FoldIt, for feature-consistent image translation of optical colonoscopy videos to virtual colonoscopy renderings with haustral fold overlays. A new transitive loss is introduced in order to leverage ground truth information between haustral fold annotations and virtual colonoscopy renderings. We demonstrate the effectiveness of our model on real challenging optical colonoscopy videos as well as on textured virtual colonoscopy videos with clinician-verified haustral fold annotations. In essence, the **FoldIt** model is a method for translating between domains when a shared common domain is available. We use the FoldIt model to learn a translation from optical colonoscopy to haustral fold annotation via a common virtual colonoscopy domain.
 

@@ -94,6 +94,17 @@ A dockerfile is provided as an additional way to install.
 ## [[MICCAI'25]](https://arxiv.org/abs/2310.00868) RT-GAN: Recurrent Temporal GAN for Adding Lightweight Temporal Consistency to Frame-Based Domain Translation Approaches
 While developing new unsupervised domain translation methods for colonoscopy (e.g. to translate between real optical and virtual/CT colonoscopy), it is thus typical to start with approaches that initially work for individual frames without temporal consistency. Once an individual-frame model has been finalized, additional contiguous frames are added with a modified deep learning architecture to train a new model from scratch for temporal consistency. This transition to temporally-consistent deep learning models, however, requires significantly more computational and memory resources for training. In this paper, we present a lightweight solution with a tunable temporal parameter, RT-GAN (Recurrent Temporal GAN), for adding temporal consistency to individual frame-based approaches that reduces training requirements by a factor of 5. We demonstrate the effectiveness of our approach on two challenging use cases in colonoscopy: haustral fold segmentation (indicative of missed surface) and realistic colonoscopy simulator video generation. We also release a first-of-its kind temporal dataset for colonoscopy for the above use cases.
 
+To train the RT-GAN model, run the following command. During the training process, results can be viewed via visdom. By default it is on http://localhost:8097.
+``` 
+python3 train.py --dataroot path_to_dataset -model rtgan -name "rtgan_model_name" 
+```
+
+To test your trained model, run the following command.
+
+```
+python3 test.py --dataroot path_to_dataset -model rtgan -name "rtgan_model_name"
+```
+
 ### Public Dataset and Model
 Both the dataset and the models can be found [here](https://zenodo.org/records/15460791).
 
